@@ -1,0 +1,222 @@
+import sys
+#global variables
+round_num = 0
+left_cannibal_count = 3
+left_missionary_count = 3
+right_cannibal_count = 0
+right_missionary_count = 0
+illegal =0 # 0= legal, 1=illegal
+done = False #if done game over
+boat_pos = 0 #0 = left, 1 = right
+finish = False #if false user not finished
+first = 's' #first choice in boat
+second = 's' #second choice in boat
+
+
+def printGame():
+    global boat_pos
+    global left_cannibal_count
+    global left_missionary_count
+    global right_cannibal_count
+    global right_missionary_count
+    print "current_left_cannibal_count:",left_cannibal_count
+    print "current_left_missionary_count:",left_missionary_count
+    print "current_right_cannibal_count:",right_cannibal_count
+    print "current_right_missionary_count:",right_missionary_count
+    print "Round %d" %round_num
+    print "Left"," "*14,"Right"
+    for index in range(left_missionary_count):
+        sys.stdout.write('M')
+    for index in range(left_cannibal_count):
+        sys.stdout.write('C')
+    sys.stdout.write('                ') 
+    for index in range(right_missionary_count):
+        sys.stdout.write('M')
+    for index in range(right_cannibal_count):
+        sys.stdout.write('C')
+    if boat_pos == 0:
+        print " "
+        sys.stdout.write('Boat')
+    if boat_pos == 1:
+        print " "
+        sys.stdout.write('                    Boat')
+
+#check if game over or user still ok
+def gameCheck():
+    global done
+    global round_num
+    if left_missionary_count>0: 
+        if left_cannibal_count > left_missionary_count:
+            print "uh oh! cannibal eat missionaries"
+            done = True
+            replay()
+        
+    if right_missionary_count >0:
+        if right_cannibal_count > right_missionary_count:
+            print "uh oh! cannibal eat missionaries"
+            done = True
+            replay()
+    round_num += 1
+
+
+#replay() gives user option to restart the game or not
+def replay():
+    global finish
+    global done
+    global round_num
+    global left_cannibal_count
+    global left_missionary_count
+    global right_cannibal_count
+    global right_missionary_count
+    global boat_pos
+    str = raw_input("Restart? y/n");
+    if str == 'y':
+        finish = False
+        done = False
+        round_num = 0
+        left_cannibal_count = 3
+        left_missionary_count = 3
+        right_cannibal_count = 0
+        right_missionary_count = 0
+        boat_pos = 0 
+    elif str == 'n':
+        finish = True
+        done = True
+
+#check whether input is valid or not
+def inputValidation(someinput1,someinput2):
+    global first
+    global second
+    if (someinput1 == 'c' or someinput1 == 'm') and (someinput2 == 'c' or someinput2 == 'm' or someinput2 == 'n'):
+        first = someinput1
+        second = someinput2
+        return True
+    else:
+        print "Illegal input!"
+        return False
+
+#check whether user is finished or not    
+def finishCheck():
+    global done
+    global finish
+    if right_missionary_count == 3 and right_cannibal_count == 3:
+        print "Hurray You beat the game in %d Rounds!" %round_num
+        done = True
+        finish = True
+        replay()
+        
+#main game starts here
+def mainGame():
+    global done
+    global finish
+    global round_num
+    global boat_pos
+    cont = True
+    while not done and not finish:
+        printGame()
+        cont = True
+        while cont: #loop until valid inputs are entered, and game legal
+            print ""
+            get_input1 = raw_input("First passenger (c for cannibal, m for missionary)")
+            get_input2 = raw_input("Second passenger (c for cannibal, m for missionary, n for none)")
+            if inputValidation(get_input1,get_input2):
+                    if gameSetter(first,second):
+                        cont = False
+                    else:
+                        cont = True
+        gameCheck()
+        finishCheck()                    
+
+#after inputs are valid then do necessary setting, if error occurs return False
+def gameSetter(first,second):
+    global boat_pos
+    global left_cannibal_count
+    global left_missionary_count
+    global right_cannibal_count
+    global right_missionary_count
+    if boat_pos == 0:
+        if first == 'c' and second == 'c':            
+            if left_cannibal_count >= 2:
+                left_cannibal_count -= 2
+                right_cannibal_count += 2
+            else:
+                print "Illegal move!"
+                return False
+        if (first == 'c' and second == 'm') or(first == 'm' and second == 'c'):
+            if left_cannibal_count >=1 and left_missionary_count>=1:
+                left_cannibal_count -= 1
+                right_cannibal_count += 1
+                left_missionary_count -= 1
+                right_missionary_count += 1
+            else:
+                print "Illegal move!"
+                return False
+        if first == 'm' and second == 'm':
+            if left_missionary_count >=2:
+                left_missionary_count -=2
+                right_missionary_count +=2
+            else:
+                print "Illegal move!"
+                return False
+        if first == 'c' and second == 'n':
+            if left_cannibal_count >= 1:
+                left_cannibal_count -=1
+                right_cannibal_count +=1
+            else:
+                print "Illegal move!"
+                return False
+        if first == 'm' and second == 'n':
+            if left_missionary_count >= 1:
+                left_missionary_count -=1
+                right_missionary_count +=1
+            else:
+                print "Illegal move!"
+                return False
+        boat_pos = 1
+        return True
+    elif boat_pos == 1:
+        if first == 'c' and second == 'c':
+            if right_cannibal_count >= 2:
+                right_cannibal_count -= 2
+                left_cannibal_count += 2
+            else:
+                print "Illegal move!"
+                return False
+        if (first == 'c' and second == 'm') or (first == 'm' and second == 'c') :
+            if right_cannibal_count >=1 and right_missionary_count >= 1:
+                right_cannibal_count -=1
+                left_cannibal_count +=1
+                right_missionary_count -= 1
+                left_missionary_count += 1
+            else:
+                print "Illegal move!"
+                return False
+        if first == 'c' and second == 'n' :
+            if right_cannibal_count >=1:
+                right_cannibal_count -= 1
+                left_cannibal_count += 1
+            else:
+                print "Illegal move!"
+                return False
+        if first == 'm' and second == 'm' :
+            if right_missionary_count >= 2:
+                right_missionary_count -= 2
+                left_missionary_count += 2
+            else:
+                print "Illegal move!"
+                return False
+        if first == 'm' and second == 'n':
+            if right_missionary_count >= 1:
+                right_missionary_count -=1
+                left_missionary_count += 1
+            else:
+                print "Illegal move!"
+                return False
+        boat_pos = 0
+        return True
+
+#Initial setup    
+print "Crossing the River"
+print "-"*25
+#Run game
+mainGame()
